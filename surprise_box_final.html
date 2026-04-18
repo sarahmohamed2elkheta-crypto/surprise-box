@@ -1,0 +1,607 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صندوق المفاجآت</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            position: relative;
+        }
+
+        .title {
+            color: #fff;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .box-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto 30px;
+        }
+
+        .box {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(145deg, #8B4513, #D2691E);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 20px;
+            box-shadow: 
+                0 20px 60px rgba(0,0,0,0.3),
+                inset 0 -10px 20px rgba(0,0,0,0.2),
+                inset 0 10px 20px rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .box:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+
+        .box.shaking {
+            animation: shake 0.5s ease-in-out infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+            25% { transform: translate(-50%, -50%) rotate(-5deg); }
+            75% { transform: translate(-50%, -50%) rotate(5deg); }
+        }
+
+        .box.open {
+            animation: openBox 1s ease forwards;
+        }
+
+        @keyframes openBox {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { 
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .lid {
+            width: 220px;
+            height: 60px;
+            background: linear-gradient(145deg, #A0522D, #CD853F);
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 20px 20px 5px 5px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 20;
+            transition: all 0.5s ease;
+        }
+
+        .lid::before {
+            content: '';
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(145deg, #FFD700, #FFA500);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .lid.open {
+            transform: translateX(-50%) rotate(-45deg) translateY(-50px);
+            opacity: 0;
+        }
+
+        .lock {
+            width: 50px;
+            height: 60px;
+            background: linear-gradient(145deg, #FFD700, #FFA500);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 10px;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .lock::before {
+            content: '🔒';
+        }
+
+        .lock.open::before {
+            content: '🔓';
+        }
+
+        .lock.open {
+            animation: unlock 0.5s ease forwards;
+        }
+
+        @keyframes unlock {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+            100% { 
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .surprise {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 100px;
+            z-index: 5;
+            opacity: 0;
+        }
+
+        .surprise.show {
+            animation: surprisePop 1s ease forwards;
+        }
+
+        @keyframes surprisePop {
+            0% { 
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            50% { 
+                transform: translate(-50%, -50%) scale(1.5);
+                opacity: 1;
+            }
+            100% { 
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            top: 50%;
+            left: 50%;
+            opacity: 0;
+        }
+
+        .confetti.active {
+            animation: confettiFall 3s ease-out forwards;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--x), var(--y)) rotate(720deg);
+            }
+        }
+
+        .timer {
+            color: #fff;
+            font-size: 1.5rem;
+            margin-top: 20px;
+            background: rgba(255,255,255,0.2);
+            padding: 15px 30px;
+            border-radius: 50px;
+            display: inline-block;
+        }
+
+        .colors-legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .color-item {
+            background: rgba(255,255,255,0.9);
+            padding: 15px 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            min-width: 120px;
+        }
+
+        .color-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .green { background: #4CAF50; }
+        .yellow { background: #FFC107; }
+        .red { background: #F44336; }
+        .diamond { background: linear-gradient(45deg, #E0E0E0, #BDBDBD); border: 3px solid #FFD700; }
+
+        .color-text {
+            font-size: 0.9rem;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .color-chance {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .click-text {
+            color: #FFD700;
+            font-size: 1.2rem;
+            margin-top: 20px;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .result-card {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: #fff;
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            z-index: 100;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            opacity: 0;
+        }
+
+        .result-card.show {
+            animation: cardPop 0.5s ease forwards;
+        }
+
+        @keyframes cardPop {
+            to {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .result-emoji {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .result-title {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .result-desc {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .result-time {
+            background: #f0f0f0;
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .result-stars {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .start-btn {
+            background: linear-gradient(145deg, #667eea, #764ba2);
+            color: #fff;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 99;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🎁 صندوق المفاجآت</h1>
+
+        <div class="box-container">
+            <div class="lid" id="lid"></div>
+            <div class="box" id="box">
+                <div class="lock" id="lock"></div>
+            </div>
+            <div class="surprise" id="surprise">🎲</div>
+        </div>
+
+        <div class="timer" id="timer">⏰ الساعة 5:00 مساءً</div>
+
+        <p class="click-text" id="clickText">👆 اضغط على الصندوق!</p>
+
+        <div class="colors-legend">
+            <div class="color-item">
+                <div class="color-circle green"></div>
+                <div class="color-text">🟢 سهل</div>
+                <div class="color-chance">40% | ⭐</div>
+            </div>
+            <div class="color-item">
+                <div class="color-circle yellow"></div>
+                <div class="color-text">🟡 متوسط</div>
+                <div class="color-chance">30% | ⭐⭐</div>
+            </div>
+            <div class="color-item">
+                <div class="color-circle red"></div>
+                <div class="color-text">🔴 صعب</div>
+                <div class="color-chance">20% | ⭐⭐⭐</div>
+            </div>
+            <div class="color-item">
+                <div class="color-circle diamond"></div>
+                <div class="color-text">💎 جائزة</div>
+                <div class="color-chance">10% | 🎁</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+    <div class="result-card" id="resultCard">
+        <div class="result-emoji" id="resultEmoji">🟡</div>
+        <h2 class="result-title" id="resultTitle">تحدي متوسط</h2>
+        <p class="result-desc" id="resultDesc">اعمل ملخص الدرس في 5 سطور بس</p>
+        <div class="result-time" id="resultTime">⏰ 10 دقائق</div>
+        <div class="result-stars" id="resultStars">⭐⭐</div>
+        <button class="start-btn" onclick="closeResult()">ابدأ التحدي! 💪</button>
+    </div>
+
+    <script>
+        const box = document.getElementById('box');
+        const lid = document.getElementById('lid');
+        const lock = document.getElementById('lock');
+        const surprise = document.getElementById('surprise');
+        const clickText = document.getElementById('clickText');
+        const overlay = document.getElementById('overlay');
+        const resultCard = document.getElementById('resultCard');
+
+        const challenges = [
+            {
+                emoji: '🟢',
+                color: '#4CAF50',
+                title: 'تحدي سهل',
+                desc: 'اكتب 3 أشياء حلوة حصلت النهاردة',
+                time: '3 دقائق',
+                stars: '⭐',
+                chance: 0.4
+            },
+            {
+                emoji: '🟡',
+                color: '#FFC107',
+                title: 'تحدي متوسط',
+                desc: 'اعمل ملخص الدرس في 5 سطور بس',
+                time: '10 دقائق',
+                stars: '⭐⭐',
+                chance: 0.3
+            },
+            {
+                emoji: '🔴',
+                color: '#F44336',
+                title: 'تحدي صعب',
+                desc: 'اسمع مراجعة على الوحدة الأولى من أي مادة عايزها',
+                time: 'ساعة',
+                stars: '⭐⭐⭐',
+                chance: 0.2
+            },
+            {
+                emoji: '💎',
+                color: '#E0E0E0',
+                title: 'جائزة مفاجأة!',
+                desc: 'دخول سحب على هدية قيمة',
+                time: 'فوري',
+                stars: '🎁',
+                chance: 0.1
+            }
+        ];
+
+        let isOpened = false;
+
+        box.addEventListener('click', openBox);
+
+        function openBox() {
+            if (isOpened) return;
+            isOpened = true;
+
+            clickText.style.display = 'none';
+
+            // اهتزاز
+            box.classList.add('shaking');
+
+            setTimeout(() => {
+                box.classList.remove('shaking');
+
+                // فتح القفل
+                lock.classList.add('open');
+
+                setTimeout(() => {
+                    // فتح الغطاء
+                    lid.classList.add('open');
+
+                    setTimeout(() => {
+                        // اختيار عشوائي
+                        const challenge = selectChallenge();
+
+                        // إظهار المفاجأة
+                        surprise.textContent = challenge.emoji;
+                        surprise.classList.add('show');
+
+                        // إخفاء الصندوق
+                        box.classList.add('open');
+
+                        // كونفيتي
+                        createConfetti();
+
+                        // إظهار النتيجة
+                        setTimeout(() => {
+                            showResult(challenge);
+                        }, 1000);
+
+                    }, 500);
+                }, 500);
+            }, 1000);
+        }
+
+        function selectChallenge() {
+            const random = Math.random();
+            let cumulative = 0;
+
+            for (let challenge of challenges) {
+                cumulative += challenge.chance;
+                if (random <= cumulative) {
+                    return challenge;
+                }
+            }
+
+            return challenges[0];
+        }
+
+        function createConfetti() {
+            const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8'];
+
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = '50%';
+                confetti.style.top = '50%';
+                confetti.style.setProperty('--x', (Math.random() - 0.5) * 500 + 'px');
+                confetti.style.setProperty('--y', (Math.random() - 0.5) * 500 + 'px');
+                document.body.appendChild(confetti);
+
+                setTimeout(() => {
+                    confetti.classList.add('active');
+                }, i * 30);
+
+                setTimeout(() => {
+                    confetti.remove();
+                }, 3000);
+            }
+        }
+
+        function showResult(challenge) {
+            document.getElementById('resultEmoji').textContent = challenge.emoji;
+            document.getElementById('resultTitle').textContent = challenge.title;
+            document.getElementById('resultDesc').textContent = challenge.desc;
+            document.getElementById('resultTime').textContent = '⏰ ' + challenge.time;
+            document.getElementById('resultStars').textContent = challenge.stars;
+
+            overlay.classList.add('show');
+            resultCard.classList.add('show');
+        }
+
+        function closeResult() {
+            overlay.classList.remove('show');
+            resultCard.classList.remove('show');
+
+            // إعادة تعيين
+            setTimeout(() => {
+                location.reload();
+            }, 500);
+        }
+
+        // عداد تنازلي للساعة 5
+        function updateTimer() {
+            const now = new Date();
+            const target = new Date();
+            target.setHours(17, 0, 0, 0); // الساعة 5 مساءً
+
+            if (now > target) {
+                target.setDate(target.getDate() + 1);
+            }
+
+            const diff = target - now;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+            if (hours === 0 && minutes < 60) {
+                document.getElementById('timer').textContent = `⏰ الصندوق يفتح بعد ${minutes} دقيقة!`;
+                document.getElementById('timer').style.background = '#FFD700';
+                document.getElementById('timer').style.color = '#333';
+            }
+        }
+
+        setInterval(updateTimer, 60000);
+        updateTimer();
+    </script>
+</body>
+</html>
